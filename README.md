@@ -1,4 +1,4 @@
 # ProPath
 
-Property-path utility with support for functions, arrays and partial application.
+Property-path utility with support for function calls and arrays.
 
