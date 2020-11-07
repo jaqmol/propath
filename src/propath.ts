@@ -1,9 +1,9 @@
 interface ProPathInstance<T> {
+  has(obj: any) :boolean
   get(obj: any) :T|undefined
 }
 
-
-export default function ProPath<T>(path: string, defaultValue?: T) :ProPathInstance<T> {
+export default function ProPath<T=any>(path: string, defaultValue?: T) :ProPathInstance<T> {
   const handlers = path.split('.')
     .map<ComponentHandler>(comp => {
       const funHandler = FunctionHandler(comp, path);
@@ -12,16 +12,34 @@ export default function ProPath<T>(path: string, defaultValue?: T) :ProPathInsta
       if (arrHandler) return arrHandler;
       return ValueHandler(comp);
     });
+  const lastIndex = handlers.length - 1;
 
+  const has = (obj: any) :boolean => {
+    if (!obj) return false;
+    let current = obj;
+    let returnValue = false;
+    for (let i = 0; i < handlers.length; i++) {
+      const handler = handlers[i];
+      if (i === lastIndex) {
+        returnValue = handler.has(obj);
+      } else {
+        const [hasNext, next] = handler.get(current);
+        if (hasNext) {
+          current = next;
+        } else {
+          return false;
+        }
+      }
+    }
+    return returnValue;
+  };
+  
   const get = (obj: any) :T|undefined => {
     if (!obj) return defaultValue;
-
     let current = obj;
-
     for (const handler of handlers) {
-      if (!current) return defaultValue;
-
-      const [hasNext, next] = handler.processGet(obj);
+      // if (!current) return defaultValue; // TODO: WRITE TEST TO COVER FAIL
+      const [hasNext, next] = handler.get(current);
       if (hasNext) {
         current = next;
       } else {
@@ -32,13 +50,15 @@ export default function ProPath<T>(path: string, defaultValue?: T) :ProPathInsta
   };
 
   return {
+    has,
     get,
   };
 }
 
 interface ComponentHandler {
-  // processHas(obj: any) :boolean
-  processGet(obj: any) :[boolean, any]
+  // type: string
+  has(obj: any) :boolean
+  get(obj: any) :[boolean, any]
   // processSet(obj: any, value: any) :boolean
   // processDelete(obj: any) :[boolean, any]
 }
@@ -53,8 +73,11 @@ function FunctionHandler(comp: string, path: string) : ComponentHandler|null {
   const fnName = comp.slice(0, openingRoundBrackets);
   const argsStr = comp.slice(openingRoundBrackets + 1, closingRoundBrackets);
   const args = JSON.parse(`[${argsStr}]`);
+  const has = (obj: any) => typeof obj[fnName] === 'function';
   return {
-    processGet: (obj: any) => typeof obj[fnName] === 'function'
+    // type: 'FUN',
+    has,
+    get: (obj: any) => has(obj)
       ? [true, obj[fnName](...args)]
       : [false, undefined],
   };
@@ -70,16 +93,24 @@ function ArrayHandler(comp: string, path: string) : ComponentHandler|null {
   const arrName = comp.slice(0, openingSquareBrackets);
   const idxStr = comp.slice(openingSquareBrackets + 1, closingSquareBrackets);
   const idx = Number.parseInt(idxStr);
+  const has = (obj: any) => obj[arrName] instanceof Array;
   return {
-    processGet: (obj: any) => obj[arrName] instanceof Array
+    // type: 'ARR',
+    has,
+    get: (obj: any) => has(obj)
       ? [true, obj[arrName][idx]]
       : [false, undefined],
   };
 }
 
-const ValueHandler = (comp: string) :ComponentHandler => ({
-  processGet: (obj: any) => typeof obj[comp] !== 'undefined'
-    ? [true, obj[comp]]
-    : [false, undefined],
-});
+const ValueHandler = (comp: string) :ComponentHandler => {
+  const has = (obj: any) => typeof obj[comp] !== 'undefined';
+  return {
+    // type: 'VAL',
+    has,
+    get: (obj: any) => has(obj)
+      ? [true, obj[comp]]
+      : [false, undefined]
+  };
+};
 
