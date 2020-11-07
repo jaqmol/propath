@@ -40,7 +40,7 @@ export default function ProPath<T=any, D=any>(path: string, defaultValue?: D) :P
     if (!obj) return defaultValue;
     let current = obj;
     for (const handler of handlers) {
-      // if (!current) return defaultValue;
+      // if (!current) return defaultValue; TODO: Test if this is not needed
       const [hasNext, next] = handler.get(current);
       if (hasNext) {
         current = next;
