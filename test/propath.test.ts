@@ -76,20 +76,33 @@ describe("PropPath test", () => {
     const pp = PropPath('');
     expect(pp).toHaveProperty('get');
   });
-  it("Can return value paths", () => {
+  it("Performs has value paths", () => {
+    const obj = cau2018Obj();
+    const daemonosaurus = PropPath('Dracohors.Herrerasauria.Daemonosaurus');
+    expect(daemonosaurus.has(obj)).toBe(true);
+  });
+  it("Performs get value paths", () => {
     const obj = cau2018Obj();
     const daemonosaurus = PropPath<number>('Dracohors.Herrerasauria.Daemonosaurus', -1);
     expect(daemonosaurus.get(obj)).toBe(1618);
   });
-  it("Can return paths with array indexes", () => {
+  it("Performs has paths with array indexes", () => {
+    const obj = cau2018Arr();
+    const daemonosaurus = PropPath('Dracohors.Herrerasauria[1]');
+    expect(daemonosaurus.has(obj)).toBe(true);
+  });
+  it("Performs get paths with array indexes", () => {
     const obj = cau2018Arr();
     const daemonosaurus = PropPath<number>('Dracohors.Herrerasauria[1]', -1);
     expect(daemonosaurus.get(obj)).toEqual('Daemonosaurus');
   });
-  it("Can return paths with array indexes and function calls", () => {
+  it("Performs has paths with array indexes and function calls", () => {
     const obj = cau2018Fun();
-    // const dinosauria = PropPath<number>('Dracohors.Dinosauria[0]', -1);
-    // console.log('dinosauria:', dinosauria.get());
+    const theropoda = PropPath('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda');
+    expect(theropoda.has(obj)).toBe(true);
+  });
+  it("Performs get paths with array indexes and function calls", () => {
+    const obj = cau2018Fun();
     const theropoda = PropPath<number>('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda', -1);
     expect(theropoda.get(obj)).toBe(1124);
   });

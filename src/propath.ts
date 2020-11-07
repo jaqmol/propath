@@ -1,9 +1,11 @@
-interface ProPathInstance<T> {
+interface ProPathInstance<T, D> {
   has(obj: any) :boolean
-  get(obj: any) :T|undefined
+  get(obj: any) :T|D|undefined
 }
 
-export default function ProPath<T=any>(path: string, defaultValue?: T) :ProPathInstance<T> {
+// TODO: WRITE TEST TO COVER FAILS
+
+export default function ProPath<T=any, D=any>(path: string, defaultValue?: D) :ProPathInstance<T, D> {
   const handlers = path.split('.')
     .map<ComponentHandler>(comp => {
       const funHandler = FunctionHandler(comp, path);
@@ -21,7 +23,7 @@ export default function ProPath<T=any>(path: string, defaultValue?: T) :ProPathI
     for (let i = 0; i < handlers.length; i++) {
       const handler = handlers[i];
       if (i === lastIndex) {
-        returnValue = handler.has(obj);
+        returnValue = handler.has(current);
       } else {
         const [hasNext, next] = handler.get(current);
         if (hasNext) {
@@ -34,11 +36,11 @@ export default function ProPath<T=any>(path: string, defaultValue?: T) :ProPathI
     return returnValue;
   };
   
-  const get = (obj: any) :T|undefined => {
+  const get = (obj: any) :T|D|undefined => {
     if (!obj) return defaultValue;
     let current = obj;
     for (const handler of handlers) {
-      // if (!current) return defaultValue; // TODO: WRITE TEST TO COVER FAIL
+      // if (!current) return defaultValue;
       const [hasNext, next] = handler.get(current);
       if (hasNext) {
         current = next;
@@ -91,14 +93,14 @@ function ArrayHandler(comp: string, path: string) : ComponentHandler|null {
     throw new Error(`Malformed array indexing "${comp}" in property path "${path}"`);
   }
   const arrName = comp.slice(0, openingSquareBrackets);
-  const idxStr = comp.slice(openingSquareBrackets + 1, closingSquareBrackets);
-  const idx = Number.parseInt(idxStr);
+  const indexStr = comp.slice(openingSquareBrackets + 1, closingSquareBrackets);
+  const index = Number.parseInt(indexStr);
   const has = (obj: any) => obj[arrName] instanceof Array;
   return {
     // type: 'ARR',
-    has,
+    has: (obj: any) => has(obj) && ((obj[arrName] as Array<any>).length > index),
     get: (obj: any) => has(obj)
-      ? [true, obj[arrName][idx]]
+      ? [true, obj[arrName][index]]
       : [false, undefined],
   };
 }
