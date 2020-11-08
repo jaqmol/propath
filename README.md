@@ -64,3 +64,77 @@ value = pp(`a.e("${param}")`).get(); // value === "n_k"
 ### How propath deals with inherited properties
 
 Propath doesn't differentiate between inherited and own properties.
+
+## Full API + examples
+
+### Import propath
+
+```typescript
+import pp from "propath";
+```
+
+### Parse property-path / instantiate propath
+
+```typescript
+const ab = pp<V, D>('a.b', 'DEFAULT');
+```
+
+- **Type V** is the value type, the path is expected to return
+- **Type D** is the value type of the default value
+
+Default value parameter is optional.
+
+### Property-path syntax
+
+#### Value access
+
+```javascript
+a.b.c.d.e
+```
+
+Values access is done by property-names separated by dots `.`.
+
+#### Array index
+
+```javascript
+a.b[5]
+```
+
+Value access is done by index number in square brackets `[` and `]`.
+
+#### Function call
+
+```javascript
+a.b.c()
+a.b.c("STRING", 6.7, false)
+```
+
+Calling functions is done by parameters in round brackets `(` and `)`.
+- Function calls cannot be nested, but can contain whitespace.
+- Parameters must be in JSON syntax, strings must be double quoted with `"`
+
+### API
+
+### `pp<T, D>(path :string, defaultValue :D) :<instance>`
+
+If `propath` is imported as the name `pp`, it is called as a function with optional type parameters `T` specifying the type returned by the path and `D` specifying the type of the default value. 
+- `D` can be omitted while `T` is provided. 
+- Neither `T` nor `D` must be provided. 
+- If `T` is omitted, return-type of `.get` will be `any`. 
+- Default value can be omitted.
+
+### `.get(<obj>) :T|any|D|undefined`
+
+Traverses the path, returns the value found in `<obj>` if the path can be traversed completely. If it cannot, the default value or `undefined` is returned.
+
+### `.set(<obj>, value) :boolean`
+
+Traverses the path, sets the value if the path can be traversed completely in `<obj>`. If it cannot, `false` is returned.
+
+### `.has(<obj>) :boolean`
+
+Traverses the path, return `true` if the path can be traversed completely in `<obj>`. If it cannot, `false` is returned.
+
+### `.delete(<obj>) :boolean`
+
+Traverses the path, deletes the value and returns `true` if the path can be traversed completely in `<obj>`. If it cannot, `false` is returned.
