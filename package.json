@@ -1,6 +1,6 @@
 {
   "name": "propath",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "",
   "keywords": [],
   "main": "dist/propath.umd.js",
@@ -9,10 +9,10 @@
   "files": [
     "dist"
   ],
-  "author": " <>",
+  "author": "Ronny Reichmann",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/jaqmol/propath"
   },
   "license": "MIT",
   "engines": {
@@ -21,7 +21,8 @@
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rimraf dist",
-    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts",
+    "document": "typedoc --out docs --target es6 --theme minimal --mode file src",
     "start": "rollup -c rollup.config.ts -w",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watch",
@@ -62,10 +63,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 90,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
+        "branches": 60,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
       }
     },
     "collectCoverageFrom": [

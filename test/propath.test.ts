@@ -1,4 +1,4 @@
-import PropPath from "../src/propath"
+import ProPath from "../src/propath"
 
 const cau2018Obj = () => ({
   Dracohors: {
@@ -46,64 +46,150 @@ const cau2018Arr = () => ({
   }
 });
 
-const cau2018Fun = () => ({
-  Dracohors: {
-    Silesauridae: {
-      Pisanosaurus: 1901,
-    },
-     Herrerasauria: {
-      Tawa: 1096,
-      Daemonosaurus: 1618,
-      Staurikosaurus: 1283,
-      Herrerasaurus: 1305,
-      Sanjuansaurus: 1558,
-    },
-    Dinosauria: [
-      {
-        Sauropodomorpha: 1757,
-        Eodromaeus: 1383,
-        Ornithoscelida: () => ({
-          Ornithischia: 1694,
-          Theropoda: 1124
-        }),
+const cau2018Fun = () => {
+  const orni = {
+    Ornithischia: 1694,
+    Theropoda: 1124
+  };
+  return {
+    Dracohors: {
+      Silesauridae: {
+        Pisanosaurus: 1901,
       },
-    ],
-  }
-});
+       Herrerasauria: {
+        Tawa: 1096,
+        Daemonosaurus: 1618,
+        Staurikosaurus: 1283,
+        Herrerasaurus: 1305,
+        Sanjuansaurus: 1558,
+      },
+      Dinosauria: [
+        {
+          Sauropodomorpha: 1757,
+          Eodromaeus: 1383,
+          Ornithoscelida: () => orni,
+        },
+      ],
+    }
+  };
+};
 
-describe("PropPath test", () => {
+describe("ProPath test", () => {
   it("Is instantiable", () => {
-    const pp = PropPath('');
+    const pp = ProPath('');
     expect(pp).toHaveProperty('get');
   });
-  it("Performs has value paths", () => {
+
+  it("Performs has value path", () => {
     const obj = cau2018Obj();
-    const daemonosaurus = PropPath('Dracohors.Herrerasauria.Daemonosaurus');
+    const daemonosaurus = ProPath('Dracohors.Herrerasauria.Daemonosaurus');
     expect(daemonosaurus.has(obj)).toBe(true);
   });
-  it("Performs get value paths", () => {
+  it("Performs get value path", () => {
     const obj = cau2018Obj();
-    const daemonosaurus = PropPath<number>('Dracohors.Herrerasauria.Daemonosaurus', -1);
+    const daemonosaurus = ProPath<number>('Dracohors.Herrerasauria.Daemonosaurus', -1);
     expect(daemonosaurus.get(obj)).toBe(1618);
   });
-  it("Performs has paths with array indexes", () => {
+  it("Performs set value path", () => {
+    const obj = cau2018Obj();
+    const daemonosaurus = ProPath<number>('Dracohors.Herrerasauria.Daemonosaurus', -1);
+    const didSet = daemonosaurus.set(obj, 9977);
+    expect(didSet).toBe(true);
+    expect(daemonosaurus.get(obj)).toBe(9977);
+  });
+
+  it("Performs has path with array indexes", () => {
     const obj = cau2018Arr();
-    const daemonosaurus = PropPath('Dracohors.Herrerasauria[1]');
+    const daemonosaurus = ProPath('Dracohors.Herrerasauria[1]');
     expect(daemonosaurus.has(obj)).toBe(true);
   });
-  it("Performs get paths with array indexes", () => {
+  it("Performs get path with array indexes", () => {
     const obj = cau2018Arr();
-    const daemonosaurus = PropPath<number>('Dracohors.Herrerasauria[1]', -1);
+    const daemonosaurus = ProPath<number>('Dracohors.Herrerasauria[1]', -1);
     expect(daemonosaurus.get(obj)).toEqual('Daemonosaurus');
   });
-  it("Performs has paths with array indexes and function calls", () => {
+  it("Performs set path with array indexes", () => {
+    const obj = cau2018Arr();
+    const daemonosaurus = ProPath<number>('Dracohors.Herrerasauria[1]', -1);
+    const didSet = daemonosaurus.set(obj, 'Daemonosaurus 9977');
+    expect(didSet).toBe(true);
+    expect(daemonosaurus.get(obj)).toEqual('Daemonosaurus 9977');
+  });
+
+  it("Performs has path with array indexes and function calls", () => {
     const obj = cau2018Fun();
-    const theropoda = PropPath('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda');
+    const theropoda = ProPath('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda');
     expect(theropoda.has(obj)).toBe(true);
   });
-  it("Performs get paths with array indexes and function calls", () => {
+  it("Performs get path with array indexes and function calls", () => {
     const obj = cau2018Fun();
-    const theropoda = PropPath<number>('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda', -1);
+    const theropoda = ProPath<number>('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda', -1);
     expect(theropoda.get(obj)).toBe(1124);
+  });
+  it("Performs set path with array indexes and function calls", () => {
+    const obj = cau2018Fun();
+    const theropoda = ProPath<number>('Dracohors.Dinosauria[0].Ornithoscelida().Theropoda', -1);
+    const didSet = theropoda.set(obj, 9977);
+    expect(didSet).toBe(true);
+    expect(theropoda.get(obj)).toBe(9977);
+  });
+
+  it("Runs the readme examples", () => {
+    const pp = ProPath;
+
+    const obj = {
+      a: {
+        b: "f",
+        c: ["g", "h"],
+        d: () => 'i',
+        e: (j: string) => `${j}_k`,
+      },
+    };
+
+    // Parse path
+    const ab = pp('a.b');
+
+    // Get value
+    let value = ab.get(obj); // value === "f"
+    expect(value).toEqual("f");
+
+    // Set value
+    ab.set(obj, "l");
+    value = ab.get(obj); // value === "l"
+    expect(value).toEqual("l");
+
+    // Has value
+    let hasAB = ab.has(obj); // hasAB === true
+    expect(hasAB).toBe(true);
+    const hasABC = pp('a.b.c').has(obj); // hasABC === false
+    expect(hasABC).toBe(false);
+
+    // Delete value
+    ab.delete(obj); // returns true if ab was found and deleted
+    hasAB = ab.has(obj); // hasAB === false
+    expect(hasAB).toBe(false);
+
+    // Get value from array
+    const ac0 = pp('a.c[0]');
+    value = ac0.get(obj); // value === "g"
+    expect(value).toEqual("g");
+    value = pp('a.c[1]').get(obj); // value === "h"
+    expect(value).toEqual("h");
+
+    // Set value on array
+    ac0.set(obj, 'm');
+    value = ac0.get(obj); // value === "m"
+    expect(value).toEqual("m");
+
+    // Get value from function
+    const ad = pp('a.d()');
+    value = ad.get(obj); // value === "i"
+    expect(value).toEqual("i");
+
+    // Get value from parametrized function
+    const param = 'n';
+    value = pp(`a.e("${param}")`).get(obj); // value === "n_k"
+    expect(value).toEqual("n_k");
+    // -> Parameters are provided in JSON syntax
   });
 });
