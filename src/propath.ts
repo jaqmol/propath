@@ -5,8 +5,6 @@ interface ProPathAPI<T, D> {
   delete(obj: any) :boolean
 }
 
-// TODO: WRITE TEST TO COVER FAILS
-
 export default function ProPath<V=any, D=any>(path: string, defaultValue?: D) :ProPathAPI<V, D> {
   const handlers = path.split('.')
     .map<ComponentHandler>(comp => {
@@ -130,10 +128,12 @@ function ArrayHandler(comp: string, path: string) : ComponentHandler|null {
   const arrName = comp.slice(0, openingSquareBrackets);
   const indexStr = comp.slice(openingSquareBrackets + 1, closingSquareBrackets);
   const index = Number.parseInt(indexStr);
-  const has = (obj: any) => obj[arrName] instanceof Array;
+  const has = (obj: any) => 
+    (obj[arrName] instanceof Array) && 
+    ((obj[arrName] as Array<any>).length > index);
   return {
-    has: (obj: any) => has(obj) && ((obj[arrName] as Array<any>).length > index),
-    get: (obj: any) => has(obj)
+    has,
+    get: (obj: any) => has(obj) 
       ? [true, obj[arrName][index]]
       : [false, undefined],
     set: (obj: any, value: any) => {

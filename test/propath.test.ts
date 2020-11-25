@@ -111,9 +111,9 @@ describe("ProPath test", () => {
   it("Performs set path with array indexes", () => {
     const obj = cau2018Arr();
     const daemonosaurus = ProPath<number>('Dracohors.Herrerasauria[1]', -1);
-    const didSet = daemonosaurus.set(obj, 'Daemonosaurus 9977');
+    const didSet = daemonosaurus.set(obj, 'Daemonosaurus_9977');
     expect(didSet).toBe(true);
-    expect(daemonosaurus.get(obj)).toEqual('Daemonosaurus 9977');
+    expect(daemonosaurus.get(obj)).toEqual('Daemonosaurus_9977');
   });
 
   it("Performs has path with array indexes and function calls", () => {
@@ -134,6 +134,19 @@ describe("ProPath test", () => {
     expect(theropoda.get(obj)).toBe(9977);
   });
 
+  it("Fails correctly on wrong indexes", () => {
+    const obj = cau2018Fun();
+    const theropodaOrUndefined = ProPath<number>('Dracohors.Dinosauria[1].Ornithoscelida().Theropoda');
+    const theropodaOr123 = ProPath<number>('Dracohors.Dinosauria[2].Ornithoscelida().Theropoda', 123);
+    const theropodaOrNull = ProPath<number>('Dracohors.Dinosauria[3].Ornithoscelida().Theropoda', null);
+    const shouldBeUndefined = theropodaOrUndefined.get(obj);
+    const shouldBe123 = theropodaOr123.get(obj);
+    const shouldBeNull = theropodaOrNull.get(obj);
+    expect(shouldBeUndefined).toBeUndefined();
+    expect(shouldBe123).toBe(123);
+    expect(shouldBeNull).toBe(null);
+  });
+
   it("Runs the readme examples", () => {
     const pp = ProPath;
 
@@ -152,6 +165,16 @@ describe("ProPath test", () => {
     // Get value
     let value = ab.get(obj); // value === "f"
     expect(value).toEqual("f");
+    
+    // Return undefined if path doesn't exist
+    const alm12 = pp('a.l.m[12]');
+    value = alm12.get(obj); // typeof value === "undefined"
+    expect(value).toBeUndefined();
+    
+    // Return predictable value if path doesn't exist
+    const ano0pOrHello = pp('a.n.o[0].p()', 'Hello');
+    value = ano0pOrHello.get(obj); // value === "Hello"
+    expect(value).toEqual('Hello');
 
     // Set value
     ab.set(obj, "l");

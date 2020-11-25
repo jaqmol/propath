@@ -30,6 +30,14 @@ const ab = pp('a.b');
 // Get value
 let value = ab.get(obj); // value === "f"
 
+// Return undefined if path doesn't exist
+const alm12 = pp('a.l.m[12]');
+value = alm12.get(obj); // typeof value === "undefined"
+    
+// Return predictable value if path doesn't exist
+const ano0pOrHello = pp('a.n.o[0].p()', 'Hello');
+value = ano0pOrHello.get(obj); // value === "Hello"
+
 // Set value
 ab.set(obj, "l");
 value = ab.get(obj); // value === "l"
